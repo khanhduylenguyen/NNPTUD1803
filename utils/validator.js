@@ -14,6 +14,30 @@ module.exports = {
         }
         next()
     },
+    validateChangePassword: [
+        body('oldPassword').notEmpty().withMessage("Mat khau cu khong duoc de trong"),
+        body('newPassword').notEmpty().withMessage("Mat khau moi khong duoc de trong").bail().isStrongPassword({
+            minLength: 8,
+            minLowercase: 1,
+            minNumbers: 1,
+            minSymbols: 1,
+            minUppercase: 1
+        }).withMessage("Mat khau moi phai co it nhat 8 ki tu trong do co it nhat: 1 ki tu hoa, 1 ki tu thuong, 1 ki tu dac biet va 1 ki tu so"),
+        function (req, res, next) {
+            let result = validationResult(req);
+            if (result.errors.length > 0) {
+                res.status(400).send(result.errors.map(
+                    function (e) {
+                        return {
+                            [e.path]: e.msg
+                        }
+                    }
+                ))
+                return;
+            }
+            next()
+        }
+    ],
     CreateAnUserValidator: [
         body('email').notEmpty().withMessage("email khong duoc de trong").bail().isEmail().withMessage("email sai dinh dang"),
         body('username').notEmpty().withMessage("username khong duoc de trong").bail().isAlphanumeric().withMessage("username khong duoc chua ki tu dac biet"),
@@ -42,5 +66,5 @@ module.exports = {
         body('role').optional().isMongoId().withMessage("role phai la ID"),
         body('avatarUrl').optional().isArray().withMessage("hinh anh khong hop le"),
         body('avatarUrl.*').optional().isURL().withMessage("URL khong hop le")
-    ],
+    ]
 }
